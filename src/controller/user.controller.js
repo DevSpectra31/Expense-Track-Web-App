@@ -63,7 +63,7 @@ const Signin=asyncHandler(async(req,res)=>{
     //      throw new ApiError(404,"password is not correct")
     //  }
      const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user._id);
-     const loggedUser=await User.findById(user._id).select("-password ");
+     const loggedUser=await User.findById(user._id).select("-password -refreshToken");
      const options={
          httpOnly:true,
          secure:false,
