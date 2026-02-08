@@ -104,6 +104,29 @@ const logout=asyncHandler(async(req,res)=>{
     throw new ApiError(400,error.message)
    }
 })
+//update account details
+const updateAccountDetails=asyncHandler(async(req,res)=>{
+    try {
+        const {username,email,newusername,newemail}=req.body;
+        if( !username || !email || !newusername || !newemail){
+            throw new ApiError(400,"all fileds are  required to update account detils");
+        }
+        const user=await User.findByIdAndUpdate(
+            req.user?._id,
+            {
+                $set:{
+                    username:newusername,
+                    email:newemail,
+                }
+            },
+            {new:true}
+        ).select("-password -refreshToken")
+        return res.status(200)
+        .json(new ApiResponse(201,user,"user account details get updated"));
+    } catch (error) {
+        throw new ApiError(500,error.message);
+    }
+})
 //get Current user
 const getCurrentUser=asyncHandler(async(req,res)=>{
     try {
@@ -150,4 +173,4 @@ const refreshAccessToken=asyncHandler(async(req,res)=>{
         throw new ApiError(500,error.message)
     }
 })
-export{Signup,Signin,logout,getCurrentUser,refreshAccessToken}
+export{Signup,Signin,logout,getCurrentUser,updateAccountDetails,refreshAccessToken}
