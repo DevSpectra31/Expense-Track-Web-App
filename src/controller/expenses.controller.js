@@ -2,9 +2,10 @@ import { Expense } from "../model/expense.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/Asynchandler.js";
+import { User } from "../model/user.model.js";
 const createExpense = asyncHandler(async (req, res) => {
   try {
-    const { amount, category, description, date } = req.body;
+    const { amount, category, description, date ,owner} = req.body;
 
     /* -------------------- BASIC VALIDATION -------------------- */
     if (!amount || amount <= 0) {
@@ -29,7 +30,7 @@ const createExpense = asyncHandler(async (req, res) => {
       owner: req.user._id,
       amount,
       category,
-      date, //{ $gte: startOfDay, $lte: endOfDay },
+      date, 
     });
 
     if (existingExpense) {
@@ -42,7 +43,7 @@ const createExpense = asyncHandler(async (req, res) => {
       category,
       description,
       date: expenseDate,
-      owner: req.user._id, // 🔐 always from token
+      owner: req.user._id // 🔐 always from token
     });
     const createdExpense=await Expense.findById(expense._id).select("-refreshToken")
     return res.status(201)
@@ -52,4 +53,29 @@ const createExpense = asyncHandler(async (req, res) => {
     throw new ApiError(500,error.message)
   }
 });
-export{createExpense}
+//get all expense of user
+const getAllExpenses = async (req, res) => {
+  try {
+    // Step 1: get logged-in user's id
+    const userId = req.user._id;
+
+    // Step 2: fetch expenses belonging to this user
+    const expenses = await Expense.find({
+      owner: userId,
+    }).sort({ date: -1 }); // latest first
+
+    // Step 3: return response
+    return res.status(200).json({
+      count: expenses.length,
+      expenses,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch expenses",
+    });
+  }
+};
+
+export{createExpense,getAllExpenses}
