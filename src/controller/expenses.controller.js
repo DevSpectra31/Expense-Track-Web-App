@@ -54,7 +54,7 @@ const createExpense = asyncHandler(async (req, res) => {
   }
 });
 //get all expense of user
-const getAllExpenses = async (req, res) => {
+const getAllExpenses = asyncHandler(async (req, res) => {
   try {
     // Step 1: get logged-in user's id
     const userId = req.user._id;
@@ -65,10 +65,8 @@ const getAllExpenses = async (req, res) => {
     }).sort({ date: -1 }); // latest first
 
     // Step 3: return response
-    return res.status(200).json({
-      count: expenses.length,
-      expenses,
-    });
+    return res.status(200)
+    .json(new ApiResponse(200,expenses.length,expenses,"expenses of a user fetched successfully"))
 
   } catch (error) {
     console.error(error);
@@ -76,6 +74,22 @@ const getAllExpenses = async (req, res) => {
       message: "Failed to fetch expenses",
     });
   }
-};
-
-export{createExpense,getAllExpenses}
+});
+//get Expenses by a id
+const getExpenseById=asyncHandler(async(req,res)=>{
+try {
+    const userId=req.user._id;
+    const expenseId=req.params.id;
+    const expense=await Expense.findOne(
+      {
+        _id:expenseId,
+        owner:expenseId,
+      }
+    )
+    return res.status(200)
+    .json(new ApiResponse(200,expense,"expense fetched successfully"));
+} catch (error) {
+  throw new ApiError(500,error.message);
+}
+})
+export{createExpense,getAllExpenses,getExpenseById}
