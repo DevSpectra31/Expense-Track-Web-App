@@ -95,11 +95,12 @@ const logout=asyncHandler(async(req,res)=>{
          httpOnly:true,
          secure:false,
      }
+     const user=await User.findById(req.user._id).select("-password -refreshToken")
      return res
      .status(200)
      .clearCookie("accessToken",options)
      .clearCookie("refreshToken",options)
-     .json(new ApiResponse(200,req.user._id,"user logout successfully"))
+     .json(new ApiResponse(200,user,"user logout successfully"))
    } catch (error) {
     throw new ApiError(400,error.message)
    }

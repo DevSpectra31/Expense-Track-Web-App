@@ -57,11 +57,11 @@ const createExpense = asyncHandler(async (req, res) => {
 const getAllExpenses = asyncHandler(async (req, res) => {
   try {
     // Step 1: get logged-in user's id
-    const userId = req.user._id;
+    const userId=req.user._id;
 
     // Step 2: fetch expenses belonging to this user
-    const expenses = await Expense.find({
-      owner: userId,
+    const expenses = await Expense.findOne({
+      owner:userId,
     }).sort({ date: -1 }); // latest first
 
     // Step 3: return response
@@ -78,18 +78,44 @@ const getAllExpenses = asyncHandler(async (req, res) => {
 //get Expenses by a id
 const getExpenseById=asyncHandler(async(req,res)=>{
 try {
-    const userId=req.user._id;
     const expenseId=req.params.id;
-    const expense=await Expense.findOne(
+    const expenses=await Expense.findOne(
       {
         _id:expenseId,
-        owner:expenseId,
       }
     )
+    if(!expenses){
+      throw new ApiError(404,"expense not found");
+    }
     return res.status(200)
-    .json(new ApiResponse(200,expense,"expense fetched successfully"));
+    .json(new ApiResponse(200,expenses,"expense fetched successfully"));
 } catch (error) {
   throw new ApiError(500,error.message);
 }
 })
-export{createExpense,getAllExpenses,getExpenseById}
+//update Expense
+const updateExpense=asyncHandler(async(req,res)=>{
+  const userId=req.user._id;
+  const expenseId=req.params.id
+  const allowedUpdates=["amount","date","description","category"];
+  const updates={};
+  allowedUpdates.forEach((field)=>{
+    if(req.body[field] !== undefined){
+      updates[field]=req.body[field];
+    }
+  })
+  if(updates.amount<=0){
+    throw new ApiError(404,"updated amount must be greater than 0 ");
+  }
+  const UpdatedExpense=await Expense.findOneAndUpdate(
+    {userId,expenseId},
+    updates,
+    {
+      new:true,
+      runValidators:true,
+    }
+  )
+  return res.status(201)
+  .json(new ApiResponse(200,updateExpense,"expense updated successfully"));
+})
+export{createExpense,getAllExpenses,getExpenseById,updateExpense}
