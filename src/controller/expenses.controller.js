@@ -26,6 +26,7 @@ const createExpense = asyncHandler(async (req, res) => {
     endOfDay.setHours(23, 59, 59, 999);
 
     /* -------------------- DUPLICATE CHECK -------------------- */
+    console.log("Owner : ",owner);
     const existingExpense = await Expense.findOne({
       owner: req.user._id,
       amount,
@@ -43,7 +44,7 @@ const createExpense = asyncHandler(async (req, res) => {
       category,
       description,
       date: expenseDate,
-      owner: req.user._id // 🔐 always from token
+      owner: req.user_.id //🔐 always from token
     });
     const createdExpense=await Expense.findById(expense._id).select("-refreshToken")
     return res.status(201)
@@ -80,18 +81,17 @@ const getExpenseById=asyncHandler(async(req,res)=>{
 try {
     const expenseId=req.params.id;
     const userId=req.user._id;
-    const expenses=await Expense.find(
+    const expense=await Expense.findOne(
       {
         _id:expenseId,
         owner:userId,
-        
       }
     )
-    if(!expenses){
+    if(!expense){
       throw new ApiError(404,"expense not found");
     }
     return res.status(200)
-    .json(new ApiResponse(200,expenses,"expense fetched successfully"));
+    .json(new ApiResponse(200,expense,"expense fetched successfully"));
 } catch (error) {
   throw new ApiError(500,error.message);
 }
