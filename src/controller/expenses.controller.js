@@ -79,9 +79,12 @@ const getAllExpenses = asyncHandler(async (req, res) => {
 const getExpenseById=asyncHandler(async(req,res)=>{
 try {
     const expenseId=req.params.id;
-    const expenses=await Expense.findOne(
+    const userId=req.user._id;
+    const expenses=await Expense.find(
       {
         _id:expenseId,
+        owner:userId,
+        
       }
     )
     if(!expenses){
