@@ -80,13 +80,12 @@ const getAllExpenses = asyncHandler(async (req, res) => {
 const getExpenseById=asyncHandler(async(req,res)=>{
 try {
     const expenseId=req.params.id;
-    const userId=req.user._id;
     const expense=await Expense.findOne(
-      {
-        _id:expenseId,
-        owner:userId,
+        {
+          expenseId,
       }
     )
+  console.log(expense);
     if(!expense){
       throw new ApiError(404,"expense not found");
     }
