@@ -174,4 +174,18 @@ const refreshAccessToken=asyncHandler(async(req,res)=>{
         throw new ApiError(500,error.message)
     }
 })
-export{Signup,Signin,logout,getCurrentUser,updateAccountDetails,refreshAccessToken}
+//delete user
+const deleteUser=asyncHandler(async(req,res)=>{
+    const userId=req.user._id;
+    if(!userId){
+        console.log("Enter the user you want to delete");
+    }
+    const deletedUser=await User.findByIdAndDelete(
+        {
+            _id:userId
+        }
+    )
+    return res.status(200)
+    .json(new ApiResponse(200,deletedUser,"User deleted Successfully"));
+})
+export{Signup,Signin,logout,getCurrentUser,updateAccountDetails,refreshAccessToken,deleteUser}

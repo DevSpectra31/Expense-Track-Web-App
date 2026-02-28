@@ -26,14 +26,16 @@
 
 # API Endpoints
 # Auth
-# POST /api/auth/register
-# POST /api/auth/login
-# GET /api/auth/me
+# POST /api/v1/users/signup
+# POST /api/v1/users/signin
+# GET /api/v1/users/currentUser
+# UPDATE /api/v1/users/update
+# DELETE /api/v1/users/delete
 # Expenses
-# POST /api/tasks
-# GET /api/tasks
-# GET /api/tasks/:id
-# PUT /api/tasks/:id
-# DELETE /api/tasks/:id
+# POST /api/v1/expenses/create
+# GET /api/v1/expenses/getExpenses
+# GET /api/v1/expenses/getExpensebyid
+# PUT /api/v1/expenses/updateExpensebyid
+# DELETE /api/v1/expenses/deleteExpense/
 # Author
 # Vineet Rajpal
