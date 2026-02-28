@@ -5,6 +5,6 @@ const app=express.Router();
 //expense route
 app.post("/create",VerifyJWT,createExpense);
 app.get("/getExpenses",VerifyJWT,getAllExpenses);
-app.get("/getExpensebyid",VerifyJWT,getExpenseById)
-app.put("/updateExpensebyid",VerifyJWT,updateExpense)
+app.get("/getExpensebyid/:expenseId",VerifyJWT,getExpenseById)
+app.put("/updateExpensebyid/:expenseId",VerifyJWT,updateExpense)
 export default app;

@@ -24,11 +24,12 @@ const createExpense = asyncHandler(async (req, res) => {
 
     const endOfDay = new Date(expenseDate);
     endOfDay.setHours(23, 59, 59, 999);
+    const userId=req.user._id;
 
     /* -------------------- DUPLICATE CHECK -------------------- */
-    console.log("Owner : ",owner);
+    console.log("Owner : ",userId);
     const existingExpense = await Expense.findOne({
-      owner: req.user._id,
+      owner: userId,
       amount,
       category,
       date, 
@@ -44,7 +45,7 @@ const createExpense = asyncHandler(async (req, res) => {
       category,
       description,
       date: expenseDate,
-      owner: req.user_.id //🔐 always from token
+      owner: userId //🔐 always from token
     });
     const createdExpense=await Expense.findById(expense._id).select("-refreshToken")
     return res.status(201)
@@ -58,13 +59,20 @@ const createExpense = asyncHandler(async (req, res) => {
 const getAllExpenses = asyncHandler(async (req, res) => {
   try {
     // Step 1: get logged-in user's id
-    const userId=req.user._id;
+    const owner=req.user._id;
+    if(!owner){
+      throw new ApiError(404,"userid is required to fetch expense details");
+    }
 
     // Step 2: fetch expenses belonging to this user
-    const expenses = await Expense.findOne({
-      owner:userId,
+    const expenses = await Expense.find({
+      owner,
     }).sort({ date: -1 }); // latest first
 
+    //if check
+    if(!owner){
+      throw new ApiError(400,"owner is required");
+    }
     // Step 3: return response
     return res.status(200)
     .json(new ApiResponse(200,expenses.length,expenses,"expenses of a user fetched successfully"))
@@ -72,20 +80,22 @@ const getAllExpenses = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Failed to fetch expenses",
+      message:`unable to fetch expense ${error.message}`,
     });
   }
 });
 //get Expenses by a id
 const getExpenseById=asyncHandler(async(req,res)=>{
 try {
-    const expenseId=req.params.id;
-    const expense=await Expense.findOne(
-        {
-          expenseId,
-      }
-    )
-  console.log(expense);
+    const expenseId=req.params.expenseId;
+    const owner=req.user._id;
+    console.log("Expense id : ",expenseId),
+    console.log("user : ,",owner);
+    const expense=await Expense.findOne({
+      _id:expenseId,
+      owner,
+    })
+     console.log(expense)
     if(!expense){
       throw new ApiError(404,"expense not found");
     }
@@ -98,7 +108,7 @@ try {
 //update Expense
 const updateExpense=asyncHandler(async(req,res)=>{
   const userId=req.user._id;
-  const expenseId=req.params.id
+  const expenseId=req.params.expenseId;
   const allowedUpdates=["amount","date","description","category"];
   const updates={};
   allowedUpdates.forEach((field)=>{
@@ -110,14 +120,15 @@ const updateExpense=asyncHandler(async(req,res)=>{
     throw new ApiError(404,"updated amount must be greater than 0 ");
   }
   const UpdatedExpense=await Expense.findOneAndUpdate(
-    {userId,expenseId},
+    {expenseId},
     updates,
     {
       new:true,
       runValidators:true,
     }
   )
+  console.log(UpdatedExpense);
   return res.status(201)
-  .json(new ApiResponse(200,updateExpense,"expense updated successfully"));
+  .json(new ApiResponse(200,UpdatedExpense,"expense updated successfully"));
 })
 export{createExpense,getAllExpenses,getExpenseById,updateExpense}
