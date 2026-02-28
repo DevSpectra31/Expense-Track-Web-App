@@ -107,28 +107,54 @@ try {
 })
 //update Expense
 const updateExpense=asyncHandler(async(req,res)=>{
-  const userId=req.user._id;
-  const expenseId=req.params.expenseId;
-  const allowedUpdates=["amount","date","description","category"];
-  const updates={};
-  allowedUpdates.forEach((field)=>{
-    if(req.body[field] !== undefined){
-      updates[field]=req.body[field];
+try {
+    const userId=req.user._id;
+    const expenseid=req.params.expenseid
+    const allowedUpdates=["amount","date","description","category"];
+    const updates={};
+    allowedUpdates.forEach((field)=>{
+      if(req.body[field] !== undefined){
+        updates[field]=req.body[field];
+      }
+    })
+    //console.log(updates);
+    if(updates.amount !== undefined && updates.amount<=0){
+      throw new ApiError(404,"updated amount must be greater than 0 ");
     }
-  })
-  if(updates.amount<=0){
-    throw new ApiError(404,"updated amount must be greater than 0 ");
+    //console.log(expenseid);
+   // console.log(userId);
+    const UpdatedExpense=await Expense.findOneAndUpdate(
+      {
+        _id:expenseid,
+        owner:userId,
+      },
+      updates,
+      {
+        new:true,
+        runValidators:true,
+      }
+    )
+    //console.log(UpdatedExpense);
+    return res.status(200)
+    .json(new ApiResponse(200, UpdatedExpense,"expense updated successfully"));
+} catch (error) {
+  throw new ApiError(500 ,error.message);
+}
+})
+//delete expense
+const deleteExpense=asyncHandler(async(req,res)=>{
+  const expenseid=req.params.expenseid;
+  const owner = req.user._id;
+  if(!owner){
+    throw new ApiError(400,"give the user whose expense you want to delete");
   }
-  const UpdatedExpense=await Expense.findOneAndUpdate(
-    {expenseId},
-    updates,
+  const deletedExpense=await Expense.findOneAndDelete(
     {
-      new:true,
-      runValidators:true,
+      _id:expenseid,
+      owner,
     }
   )
-  console.log(UpdatedExpense);
-  return res.status(201)
-  .json(new ApiResponse(200,UpdatedExpense,"expense updated successfully"));
+  return res.status(200)
+  .json(new ApiResponse(200,deleteExpense,"Expense successfully deleted by user"));
 })
-export{createExpense,getAllExpenses,getExpenseById,updateExpense}
+export{createExpense,getAllExpenses,getExpenseById,updateExpense,deleteExpense}
